@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "./api/pb";
+
+service AddressService {
+  // GetAddress gets or generates a deposit address for a user
+  rpc GetAddress (GetAddressRequest) returns (GetAddressResponse);
+}
+
+message GetAddressRequest {
+  uint32 user_id = 1;
+  string currency = 2; // "BTC", "ETH"
+}
+
+message GetAddressResponse {
+  string address = 1;
+  uint32 path_index = 2;
+  string currency = 3;
+}
