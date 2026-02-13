@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wallet-config
+  namespace: default
+data:
+  DB_HOST: "wallet-db-service"
+  DB_PORT: "5432"
+  DB_USER: "wallet_user"
+  DB_NAME: "wallet_db"
+  REDIS_ADDR: "wallet-redis-service:6379"
+  # New Configs for Viper
+  APP_ENV: "production"
+  REDIS_MQ_TYPE: "redis" # or "kafka"

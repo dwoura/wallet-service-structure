@@ -1,0 +1,84 @@
+basePath: /api/v1
+definitions:
+  request.RegisterRequest:
+    properties:
+      email:
+        description: 必填，且必须是邮箱格式
+        type: string
+      password:
+        description: 必填，8-32字符
+        maxLength: 32
+        minLength: 8
+        type: string
+      username:
+        description: 必填，4-20字符
+        maxLength: 20
+        minLength: 4
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  response.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      msg:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: BlockChain Wallet Server API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Wallet Core API
+  version: "1.0"
+paths:
+  /api/v1/register:
+    post:
+      consumes:
+      - application/json
+      description: 注册新用户，演示输入参数校验
+      parameters:
+      - description: 注册参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 用户注册
+      tags:
+      - User
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Get the current health status of the server
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Check system health
+      tags:
+      - system
+swagger: "2.0"

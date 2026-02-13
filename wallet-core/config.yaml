@@ -1,0 +1,26 @@
+app:
+  env: "development"
+  http_port: "8080"
+  grpc_port: "50051"
+
+db:
+  host: "localhost"
+  port: "5433"
+  user: "wallet_user"
+  password: "wallet_password"
+  name: "wallet_db"
+
+redis:
+  addr: "localhost:6380"
+  password: ""
+  db: 0
+  mq_type: "redis" # or "kafka"
+
+kafka:
+  brokers:
+    - "localhost:9094"
+
+wallet:
+  mnemonic: "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+  hot_wallet: "0xBeE4e510825B3F4588E9152C9F8E45402F000000"
+  rpc_url: "" # Leave empty for simulation mode

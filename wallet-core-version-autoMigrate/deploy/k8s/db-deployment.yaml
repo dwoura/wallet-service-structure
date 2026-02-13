@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wallet-db
+  namespace: default
+  labels:
+    app: wallet-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wallet-db
+  template:
+    metadata:
+      labels:
+        app: wallet-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "wallet_user"
+            - name: POSTGRES_PASSWORD
+              value: "wallet_password"
+            - name: POSTGRES_DB
+              value: "wallet_db"
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          # 在生产环境中，这里应该挂载 PVC (PersistentVolumeClaim)
+          # volumeMounts:
+          #   - mountPath: /var/lib/postgresql/data
+          #     name: postgres-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wallet-db-service
+  namespace: default
+spec:
+  selector:
+    app: wallet-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP

@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS outbox_messages;
+DROP TABLE IF EXISTS collections;
+DROP TABLE IF EXISTS withdrawals;
+DROP TABLE IF EXISTS deposits;
+DROP TABLE IF EXISTS addresses;
+DROP TABLE IF EXISTS accounts;
+DROP TABLE IF EXISTS users;

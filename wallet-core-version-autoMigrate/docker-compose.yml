@@ -1,0 +1,146 @@
+version: "3.8"
+
+services:
+  # PostgreSQL: 用于存储用户、账户、地址和交易数据
+  postgres:
+    image: postgres:15-alpine
+    container_name: wallet-db
+    environment:
+      POSTGRES_USER: wallet_user
+      POSTGRES_PASSWORD: wallet_password
+      POSTGRES_DB: wallet_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - wallet-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wallet_user -d wallet_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis: 用于分布式锁和消息队列
+  redis:
+    image: redis:7-alpine
+    container_name: wallet-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - wallet-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Wallet Server: 核心业务服务
+  wallet-server:
+    build:
+      context: .
+      args:
+        HTTP_PROXY: ""
+        HTTPS_PROXY: ""
+    container_name: wallet-server
+    restart: always
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=wallet_user
+      - DB_PASSWORD=wallet_password
+      - DB_NAME=wallet_db
+      - REDIS_ADDR=redis:6379
+      - MQ_TYPE=kafka   # 切换为 Kafka
+      - KAFKA_ADDR=kafka:29092 # 内部地址
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    networks:
+      - wallet-net
+
+  # Zookeeper: Kafka 的依赖
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    container_name: wallet-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2182:2181"
+    networks:
+      - wallet-net
+    healthcheck:
+      test: echo stat | nc localhost 2181 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Kafka: 消息队列
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: wallet-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9094:9094" # 外部访问端口
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      # 监听器配置: 
+      # - INTERNAL: 供 Docker 内部服务 (app) 使用, 地址 kafka:29092
+      # - EXTERNAL: 供宿主机 (Mac) 使用, 地址 localhost:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9094
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - wallet-net
+    healthcheck:
+      test: nc -z localhost 9094 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Prometheus: 监控指标采集
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: wallet-prometheus
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - wallet-net
+
+  # Grafana: 监控可视化
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: wallet-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+      - "3000:3000"
+    networks:
+      - wallet-net
+    depends_on:
+      - prometheus
+
+networks:
+  wallet-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

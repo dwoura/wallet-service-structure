@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wallet-redis
+  namespace: default
+  labels:
+    app: wallet-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wallet-redis
+  template:
+    metadata:
+      labels:
+        app: wallet-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          # volumeMounts:
+          #   - mountPath: /data
+          #     name: redis-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wallet-redis-service
+  namespace: default
+spec:
+  selector:
+    app: wallet-redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP
