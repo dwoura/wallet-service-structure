@@ -11,8 +11,8 @@
   - [Cmd 与脚本规范](./docs/guide_best_practices.md#17-cmd-目录与脚本最佳实践)
 - [🗄️ 数据库设计](./docs/schema_design.md)
 - [🛳️ 生产环境部署](./docs/module_11_production_readiness.md)
-- [📈 高级扩展性 (Scalability)](./docs/guide_backend_asynq.md): Asynq 任务队列与模块化路由。
-- [📊 业务监控 (Observability)](./docs/guide_monitor_business.md): Prometheus 业务指标埋点指南。
+- [📈 高级扩展性 (Scalability)](./docs/module_13_guide_backend_asynq.md): Asynq 任务队列与模块化路由。
+- [📊 业务监控 (Observability)](./docs/module_13_guide_monitor_business.md): Prometheus 业务指标埋点指南。
 
 ## 🚀 快速开始
 

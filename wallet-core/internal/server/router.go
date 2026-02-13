@@ -39,8 +39,11 @@ func NewHTTPRouter() *gin.Engine {
 		// 注册用户模块路由
 		routes.RegisterUserRoutes(api)
 
-		// 未来在这里添加更多业务路由，例如:
-		// routes.RegisterWalletRoutes(api)
+		// 注册管理后台路由 [NEW]
+		routes.RegisterAdminRoutes(api)
+
+		// 注册钱包业务路由 [NEW]
+		routes.RegisterWalletRoutes(api)
 	}
 
 	return r

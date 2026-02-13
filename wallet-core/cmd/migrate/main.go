@@ -14,7 +14,9 @@ import (
 
 func main() {
 	var command string
-	flag.StringVar(&command, "cmd", "up", "Command to run: up, down")
+	var version int
+	flag.StringVar(&command, "cmd", "up", "Command to run: up, down, force")
+	flag.IntVar(&version, "v", -1, "Version for force command")
 	flag.Parse()
 
 	// 加载配置
@@ -46,6 +48,14 @@ func main() {
 			log.Fatalf("Migration down failed: %v", err)
 		}
 		log.Println("Migration down done")
+	} else if command == "force" {
+		if version == -1 {
+			log.Fatal("Version (-v) is required for force command")
+		}
+		if err := m.Force(version); err != nil {
+			log.Fatalf("Migration force failed: %v", err)
+		}
+		log.Printf("Migration fields forced to version %d", version)
 	} else {
 		log.Fatalf("Unknown command: %s", command)
 	}

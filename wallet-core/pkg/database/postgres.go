@@ -10,6 +10,9 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+// DB 全局数据库连接对象
+var DB *gorm.DB
+
 // ConnectPostgres 连接到 PostgreSQL 数据库
 // dsn: "host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable"
 func ConnectPostgres(dsn string) (*gorm.DB, error) {
@@ -31,5 +34,6 @@ func ConnectPostgres(dsn string) (*gorm.DB, error) {
 	sqlDB.SetConnMaxLifetime(time.Hour) // 连接最大存活时间
 
 	log.Println("PostgreSQL 连接成功")
+	DB = db // [NEW] 赋值给全局变量
 	return db, nil
 }

@@ -193,6 +193,15 @@ func main() {
 		}()
 	}
 
+	// 11.2 [NEW] 启动提现广播服务 (MultiSig Broadcaster)
+	broadcaster, err := service.NewBroadcasterService(db, rpcURL, masterKey)
+	if err != nil {
+		logger.Error("Broadcaster 初始化失败", zap.Error(err))
+	} else {
+		// 在后台运行
+		go broadcaster.Start(context.Background())
+	}
+
 	// 11.5 启动定时任务服务 (Module 11)
 	cronService := service.NewCronService(rdb)
 	cronService.Start()
