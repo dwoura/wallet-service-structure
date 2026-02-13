@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"wallet-core/pkg/wallet/bip39"
+	"wallet-core/pkg/bip39"
 
 	"github.com/btcsuite/btcd/chaincfg"
 )

@@ -7,11 +7,12 @@ import (
 
 // BusinessMetrics 定义业务监控指标
 type BusinessMetrics struct {
-	UserRegisteredTotal  prometheus.Counter
-	DepositAmountTotal   *prometheus.CounterVec
-	WithdrawAmountTotal  *prometheus.CounterVec
-	SweeperJobDuration   *prometheus.HistogramVec
-	AddressPoolRemaining *prometheus.GaugeVec
+	UserRegisteredTotal    prometheus.Counter
+	DepositAmountTotal     *prometheus.CounterVec
+	WithdrawAmountTotal    *prometheus.CounterVec
+	SweeperJobDuration     *prometheus.HistogramVec
+	AddressPoolRemaining   *prometheus.GaugeVec
+	WithdrawalSuccessTotal *prometheus.CounterVec
 }
 
 // Global Metrics Instance
@@ -41,5 +42,9 @@ func InitBusinessMetrics() {
 			Name: "wallet_address_pool_remaining",
 			Help: "Remaining addresses in the pool",
 		}, []string{"currency"}),
+		WithdrawalSuccessTotal: promauto.NewCounterVec(prometheus.CounterOpts{
+			Name: "wallet_withdraw_success_total",
+			Help: "Total number of successful withdrawals",
+		}, []string{"chain"}),
 	}
 }

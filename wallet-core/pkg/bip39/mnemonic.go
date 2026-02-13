@@ -40,6 +40,12 @@ func (s *MnemonicService) ValidateMnemonic(mnemonic string) bool {
 // MnemonicToSeed 将助记词转换为种子 (BIP-39 Seed)。
 // password: 可选的密码 (Passphrase),用于以此增强安全性 (这也是 "第25个单词" 的由来)。
 // 如果不需要密码，传空字符串 ""。
-func (s *MnemonicService) MnemonicToSeed(mnemonic string, password string) []byte {
+// NewSeed 这是一个辅助函数，直接暴露 bip39.NewSeed
+func NewSeed(mnemonic string, password string) []byte {
 	return bip39.NewSeed(mnemonic, password)
+}
+
+// MnemonicToSeed 将助记词转换为种子 (BIP-39 Seed)
+func (s *MnemonicService) MnemonicToSeed(mnemonic string, password string) []byte {
+	return NewSeed(mnemonic, password)
 }

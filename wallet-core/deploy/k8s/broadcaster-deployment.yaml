@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broadcaster-worker
+  namespace: default
+  labels:
+    app: broadcaster-worker
+spec:
+  replicas: 1 # Worker 通常不需要多实例，除非是通过 Kafka Group 消费
+  selector:
+    matchLabels:
+      app: broadcaster-worker
+  template:
+    metadata:
+      labels:
+        app: broadcaster-worker
+    spec:
+      containers:
+        - name: broadcaster-worker
+          image: wallet-core:latest
+          imagePullPolicy: IfNotPresent
+          command: ["./broadcaster-worker"]
+          envFrom:
+            - configMapRef:
+                name: wallet-config
+            - secretRef:
+                name: wallet-secret
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+          # Worker 没有监听端口，通常不需要 Liveness Probe，或者可以使用 exec 命令检查进程
+          # 这里暂时省略，或者可以写一个简单的 shell 检查

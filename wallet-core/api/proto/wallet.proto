@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package wallet.v1;
+
+option go_package = "github.com/wallet-core/api/gen/wallet/v1;walletv1";
+
+service WalletService {
+  // Address Management
+  rpc CreateAddress (CreateAddressRequest) returns (CreateAddressResponse);
+  
+  // Assets
+  rpc GetBalance (GetBalanceRequest) returns (GetBalanceResponse);
+  
+  // Transactions
+  rpc CreateWithdrawal (CreateWithdrawalRequest) returns (CreateWithdrawalResponse);
+}
+
+message CreateAddressRequest {
+  int64 user_id = 1;
+  string currency = 2; // e.g., "ETH", "BTC"
+}
+
+message CreateAddressResponse {
+  string address = 1;
+}
+
+message GetBalanceRequest {
+  int64 user_id = 1;
+  string currency = 2; // Optional, empty means all
+}
+
+message GetBalanceResponse {
+  map<string, string> balances = 1; // Currency -> Amount (String for precision)
+}
+
+message CreateWithdrawalRequest {
+  int64 user_id = 1;
+  string to_address = 2;
+  string amount = 3;
+  string currency = 4;
+}
+
+message CreateWithdrawalResponse {
+  int64 withdrawal_id = 1;
+  string status = 2; // "pending_review"
+}

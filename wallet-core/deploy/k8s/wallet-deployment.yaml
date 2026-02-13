@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wallet-service
+  namespace: default
+  labels:
+    app: wallet-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wallet-service
+  template:
+    metadata:
+      labels:
+        app: wallet-service
+    spec:
+      containers:
+        - name: wallet-service
+          image: wallet-core:latest
+          imagePullPolicy: IfNotPresent
+          command: ["./wallet-service"]
+          ports:
+            - containerPort: 50052
+          envFrom:
+            - configMapRef:
+                name: wallet-config
+            - secretRef:
+                name: wallet-secret
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+          livenessProbe:
+            tcpSocket:
+              port: 50052
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 50052
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wallet-service
+  namespace: default
+spec:
+  selector:
+    app: wallet-service
+  ports:
+    - protocol: TCP
+      port: 50052
+      targetPort: 50052
+  type: ClusterIP

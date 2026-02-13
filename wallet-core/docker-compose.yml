@@ -37,14 +37,15 @@ services:
       timeout: 5s
       retries: 5
 
-  # Wallet Server: 核心业务服务
-  wallet-server:
-    build:
-      context: .
-      args:
-        HTTP_PROXY: ""
-        HTTPS_PROXY: ""
-    container_name: wallet-server
+  # -----------------------------------------------------------------
+  # Microservices
+  # -----------------------------------------------------------------
+
+  # 1. User Service (GRPC :50053)
+  user-service:
+    build: .
+    container_name: user-service
+    command: ./user-service
     restart: always
     environment:
       - DB_HOST=postgres
@@ -53,8 +54,34 @@ services:
       - DB_PASSWORD=wallet_password
       - DB_NAME=wallet_db
       - REDIS_ADDR=redis:6379
-      - MQ_TYPE=kafka   # 切换为 Kafka
-      - KAFKA_ADDR=kafka:29092 # 内部地址
+      - APP_ENV=dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "50053:50053"
+    networks:
+      - wallet-net
+
+  # 2. Wallet Service (GRPC :50052)
+  wallet-service:
+    build: .
+    container_name: wallet-service
+    command: ./wallet-service
+    restart: always
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=wallet_user
+      - DB_PASSWORD=wallet_password
+      - DB_NAME=wallet_db
+      - REDIS_ADDR=redis:6379
+      - APP_ENV=dev
+      # Kafka Config (Phase 4 Prep)
+      - MQ_TYPE=kafka
+      - KAFKA_ADDR=kafka:29092
     depends_on:
       postgres:
         condition: service_healthy
@@ -63,8 +90,29 @@ services:
       kafka:
         condition: service_healthy
     ports:
-      - "8080:8080"
-      - "50051:50051"
+      - "50052:50052"
+    networks:
+      - wallet-net
+
+  # 3. Broadcaster Worker (Background Process)
+  broadcaster-worker:
+    build: .
+    container_name: broadcaster-worker
+    command: ./broadcaster-worker
+    restart: always
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=wallet_user
+      - DB_PASSWORD=wallet_password
+      - DB_NAME=wallet_db
+      - APP_ENV=dev
+      # RPC URL (use Alchemy/Infura or local Simulator)
+      # For now using a dummy URL or let it fallback to simulation
+      - WALLET_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/demo
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - wallet-net
 

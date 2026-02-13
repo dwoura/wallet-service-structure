@@ -15,6 +15,9 @@ COPY . .
 
 # 编译 (静态链接)
 RUN CGO_ENABLED=0 GOOS=linux go build -o wallet-server ./cmd/wallet-server
+RUN CGO_ENABLED=0 GOOS=linux go build -o user-service ./cmd/user-service
+RUN CGO_ENABLED=0 GOOS=linux go build -o wallet-service ./cmd/wallet-service
+RUN CGO_ENABLED=0 GOOS=linux go build -o broadcaster-worker ./cmd/broadcaster-worker
 
 # Run Stage
 FROM alpine:latest
@@ -26,9 +29,16 @@ WORKDIR /app
 
 # 从构建阶段复制二进制文件
 COPY --from=builder /app/wallet-server .
+COPY --from=builder /app/user-service .
+COPY --from=builder /app/wallet-service .
+COPY --from=builder /app/broadcaster-worker .
 
-# 暴露端口 (虽然 wallet-server 目前没有监听 HTTP 端口，但这是一个好习惯)
-# EXPOSE 8080
+# 暴露端口
+# 8080: Gateway/Monolith HTTP
+# 50051: Monolith gRPC
+# 50052: Wallet Service gRPC
+# 50053: User Service gRPC
+EXPOSE 8080 50051 50052 50053
 
-# 运行
+# 默认运行 wallet-server (可被 K8s command 覆盖)
 CMD ["./wallet-server"]
